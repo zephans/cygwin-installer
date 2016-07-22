@@ -1,22 +1,31 @@
 @echo off
 
 rem Set CYGWIN_BASE variable to the installation directory.
-rem By default this will be C:\Users\<username>\cygwin
-set CYGWIN_BASE=%USERPROFILE%\cygwin
+rem cygwin-installer default is C:\Users\<username>\cygwin
+rem cygwin.com setup default is C:\cygwin64 {or C:\cygwin32}
+rem set CYGWIN_BASE=%USERPROFILE%\cygwin
+set CYGWIN_BASE=C:\cygwin64
 
-rem Set CPU to the desired version of Cygwin.
-rem Use x86 for 32-bit Cygwin, or x86_64 for 64-bit Cygwin
+rem Set CPU - x86 for 32-bit Cygwin, or x86_64 for 64-bit Cygwin
 set CPU=x86_64
 
-rem Do no change anything past this point!
+rem cygwin_install.exe settings and packages for install
+rem format of command is setup-%CPU% %CYGWIN_OPTIONS% %SITE% %PACKAGES% 
+set CYGWIN_OPTIONS=--no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts 
+set SITE=--site ftp://mirror.switch.ch/mirror/cygwin/ 
+set PACKAGES=--categories Base -l %CYGWIN_BASE%\var\cache\apt\packages 
+set PACKAGES=%PACKAGES% --packages dos2unix,ncurses,wget,gcc-g++,make,vim,git
+
+rem---------------------------------
+rem No changes needed past this point!
 
 if not exist %CYGWIN_BASE% goto install
-echo The directory %CYGWIN_BASE% already exists.
-echo Cannot install over an existing installation.
-goto exit
+   echo The directory %CYGWIN_BASE% already exists.
+   echo Cannot install over an existing installation.
+   goto exit
 
 :install
-echo About to install Cygwin %CPU% on %CYGWIN_BASE%
+echo About to install Cygwin %CPU% to folder %CYGWIN_BASE%
 pause
 
 mkdir "%CYGWIN_BASE%"
@@ -54,9 +63,11 @@ echo adoStream.SaveToFile target                                        >> %DLOA
 echo adoStream.Close                                                    >> %DLOAD_SCRIPT%
 echo.                                                                   >> %DLOAD_SCRIPT%
 
-rem Install base cygwin
+echo.
+echo ** Installing base cygwin...
 cscript /nologo %DLOAD_SCRIPT% https://cygwin.com/setup-%CPU%.exe setup-%CPU%.exe
-setup-%CPU% --no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts --site ftp://mirror.switch.ch/mirror/cygwin/ --categories Base -l %CYGWIN_BASE%\var\cache\apt\packages --packages dos2unix,ncurses,wget,gcc-g++,make,vim,git
+setup-%CPU% %CYGWIN_OPTIONS% %SITE% %PACKAGES% 
+rem original command: setup-%CPU% --no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts --site ftp://mirror.switch.ch/mirror/cygwin/ --categories Base -l %CYGWIN_BASE%\var\cache\apt\packages --packages dos2unix,ncurses,wget,gcc-g++,make,vim,git
 
 rem Install apt-cyg package manager
 %CYGWIN_BASE%\bin\wget -O /bin/apt-cyg https://raw.githubusercontent.com/transcode-open/apt-cyg/master/apt-cyg
