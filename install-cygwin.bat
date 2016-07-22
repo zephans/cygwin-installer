@@ -1,9 +1,9 @@
 @echo off
 
 rem Set CYGWIN_BASE variable to the installation directory.
-rem cygwin-installer default is C:\Users\<username>\cygwin
-rem cygwin.com setup default is C:\cygwin64 {or C:\cygwin32}
-rem set CYGWIN_BASE=%USERPROFILE%\cygwin
+   rem cygwin-installer default is C:\Users\<username>\cygwin
+   rem cygwin.com setup default is C:\cygwin64 {or C:\cygwin32}
+   rem set CYGWIN_BASE=%USERPROFILE%\cygwin
 set CYGWIN_BASE=C:\cygwin64
 
 rem Set CPU - x86 for 32-bit Cygwin, or x86_64 for 64-bit Cygwin
@@ -15,6 +15,8 @@ set CYGWIN_OPTIONS=--no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts
 set SITE=--site ftp://mirror.switch.ch/mirror/cygwin/ 
 set PACKAGES=--categories Base -l %CYGWIN_BASE%\var\cache\apt\packages 
 set PACKAGES=%PACKAGES% --packages dos2unix,ncurses,wget,gcc-g++,make,vim,git
+
+set DESKTOP_SHORTCUT=TRUE
 
 rem---------------------------------
 rem No changes needed past this point!
@@ -31,6 +33,7 @@ pause
 mkdir "%CYGWIN_BASE%"
 cd %CYGWIN_BASE%
 
+echo Getting Cygwin setup-%CPU%.exe...
 rem Windows has no built-in wget or curl, so we generate a VBS script to do the same
 set DLOAD_SCRIPT=%TEMP%\download-%RANDOM%-%RANDOM%-%RANDOM%-%RANDOM%.vbs
 echo Option Explicit                                                    >  %DLOAD_SCRIPT%
@@ -63,30 +66,34 @@ echo adoStream.SaveToFile target                                        >> %DLOA
 echo adoStream.Close                                                    >> %DLOAD_SCRIPT%
 echo.                                                                   >> %DLOAD_SCRIPT%
 
+cscript /nologo %DLOAD_SCRIPT% https://cygwin.com/setup-%CPU%.exe setup-%CPU%.exe
 echo.
 echo ** Installing base cygwin...
-cscript /nologo %DLOAD_SCRIPT% https://cygwin.com/setup-%CPU%.exe setup-%CPU%.exe
 setup-%CPU% %CYGWIN_OPTIONS% %SITE% %PACKAGES% 
 rem original command: setup-%CPU% --no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts --site ftp://mirror.switch.ch/mirror/cygwin/ --categories Base -l %CYGWIN_BASE%\var\cache\apt\packages --packages dos2unix,ncurses,wget,gcc-g++,make,vim,git
 
-rem Install apt-cyg package manager
+echo.
+echo ** Installing apt-cyg package manager...
 %CYGWIN_BASE%\bin\wget -O /bin/apt-cyg https://raw.githubusercontent.com/transcode-open/apt-cyg/master/apt-cyg
 %CYGWIN_BASE%\bin\chmod +x /bin/apt-cyg
-
-rem Create home directory
+echo.
+echo Creating home directory...
 "%CYGWIN_BASE%\bin\bash" --login -c echo "Creating home directory..."
+echo.
 
-rem Create desktop shortcut
-set SHORTCUT_SCRIPT=%TEMP%\shortcut-%RANDOM%-%RANDOM%-%RANDOM%-%RANDOM%.vbs
-echo Set oWS = WScript.CreateObject("WScript.Shell")                    >  "%SHORTCUT_SCRIPT%"
-echo sLinkFile = "%USERPROFILE%\Desktop\Cygwin.lnk"                     >> "%SHORTCUT_SCRIPT%"
-echo Set oLink = oWS.CreateShortcut(sLinkFile)                          >> "%SHORTCUT_SCRIPT%"
-echo oLink.TargetPath = "%CYGWIN_BASE%\bin\mintty.exe"                  >> "%SHORTCUT_SCRIPT%"
-echo oLink.Arguments = "-"                                              >> "%SHORTCUT_SCRIPT%"
-echo oLink.Save                                                         >> "%SHORTCUT_SCRIPT%"
-cscript /nologo "%SHORTCUT_SCRIPT%"
-
-rem Cleanup
+if /I "%DESKTOP_SHORTCUT%"="TRUE" (
+    echo Create desktop shortcut
+    set SHORTCUT_SCRIPT=%TEMP%\shortcut-%RANDOM%-%RANDOM%-%RANDOM%-%RANDOM%.vbs
+    echo Set oWS = WScript.CreateObject("WScript.Shell")                    >  "%SHORTCUT_SCRIPT%"
+    echo sLinkFile = "%USERPROFILE%\Desktop\Cygwin.lnk"                     >> "%SHORTCUT_SCRIPT%"
+    echo Set oLink = oWS.CreateShortcut(sLinkFile)                          >> "%SHORTCUT_SCRIPT%"
+    echo oLink.TargetPath = "%CYGWIN_BASE%\bin\mintty.exe"                  >> "%SHORTCUT_SCRIPT%"
+    echo oLink.Arguments = "-"                                              >> "%SHORTCUT_SCRIPT%"
+    echo oLink.Save                                                         >> "%SHORTCUT_SCRIPT%"
+    cscript /nologo "%SHORTCUT_SCRIPT%"
+)
+echo.
+echo ** Cleanup...
 del "%DLOAD_SCRIPT%"
 del "%SHORTCUT_SCRIPT%"
 set CYGWIN_BASE=
