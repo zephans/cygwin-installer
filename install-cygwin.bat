@@ -11,10 +11,101 @@ set CPU=x86_64
 
 rem cygwin_install.exe settings and packages for install
 rem format of command is setup-%CPU% %CYGWIN_OPTIONS% %SITE% %PACKAGES% 
-set CYGWIN_OPTIONS=--no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts 
-set SITE=--site ftp://mirror.switch.ch/mirror/cygwin/ 
-set PACKAGES=--categories Base -l %CYGWIN_BASE%\var\cache\apt\packages 
-set PACKAGES=%PACKAGES% --packages dos2unix,ncurses,wget,gcc-g++,make,vim,git
+rem FYI: setup options available by running setup-x86_64.exe --help
+set CYGWIN_OPTIONS=--no-admin --root %CYGWIN_BASE% --quiet-mode --disable-buggy-antivirus --local-package-dir %CYGWIN_BASE%\var\cache\apt\packages
+rem --no-shortcuts 
+
+rem SITE: If default doesn't work then pick from https://cygwin.com/mirrors.html
+rem set SITE=ftp://mirror.switch.ch/mirror/cygwin/ 
+set SITE=http://mirrors.kernel.org/sourceware/cygwin/
+
+REM *** PACKAGES TO INSTALL ***
+REM --------------------------------------------------------------
+REM Common package groups for different types of work 
+REM   -- PACKAGES grouping pattern from https://github.com/stephenmm/auto-install-cygwin
+REM   -- TIP: any duplicates will be ignored
+REM For a full package list see https://cygwin.com/packages/
+set CATEGORIES=--categories Base 
+
+REM Networking : {required for SSH tunnels}
+SET PACKAGES=--packages openssh,openssl,corkscrew,autossh
+
+REM Development :
+SET PACKAGES=%PACKAGES%,git,git-completion,git-gui-gitk
+
+REM General :
+SET PACKAGES=%PACKAGES%,curl,wget,netcat,login
+SET PACKAGES=%PACKAGES%,diffutils,ctags,bash-completion
+
+REM Editors :
+SET PACKAGES=%PACKAGES%,vim
+
+REM apt-cyg install dependencies, do not change -- from https://github.com/hasantahir/cygwin-auto-install
+SET PACKAGES=%PACKAGES%,wget,tar,gawk,bzip2,subversion
+
+REM vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+REM TODO -- Consolidate PACKAGES groups, then delete remarked blocks below.
+REM packages from https://gist.github.com/wjrogers/1016065 
+REM SET PACKAGES=mintty,wget,ctags,diffutils,git,git-completion,git-svn,mercurial
+REM SET PACKAGES=%PACKAGES%,gcc-core,make,automake,autoconf,readline,libncursesw-devel,libiconv,zlib-devel,gettext
+REM SET PACKAGES=%PACKAGES%,lua,python,ruby
+REM SET PACKAGES=%PACKAGES%,vim
+REM simplified setup command from same gist - setup -q -D -L -d -g -o -s %SITE% -l "%LOCALDIR%" -R "%ROOTDIR%" -C Base -P %PACKAGES%
+
+REM packages liked by migueigrinberg/cygwin-installer 
+REM set PACKAGES=%PACKAGES% --packages dos2unix,ncurses,wget,gcc-g++,make,vim,git
+
+REM packages from https://github.com/hasantahir/cygwin-auto-install
+REM -- These are the packages we will install (in addition to the default packages)
+REM SET PACKAGES=mintty,gcc-devel,gnuplot,make,automake,lapack,hdf5,guile,gsl-devel,indent,gmp,libunistring,pkg-config,ffi,bdw,libgc,libpng
+REM -- These are necessary for apt-cyg install, do not change. Any duplicates will be ignored.
+REM SET PACKAGES=%PACKAGES%,wget,tar,gawk,bzip2,subversion
+
+
+REM packages from https://gist.github.com/mojmir-svoboda/02bb4b683ec14d9bb9c1 (getfile.vbs) fork of install.bat
+REM	echo [INFO]: Cygwin setup installing base packages
+REM	%PROGNAME% %OPTIONS% -s %SITE% -l "%LOCALDIR%" -R "%ROOTDIR%"
+REM
+REM	echo [INFO]: For more packages go to http://grasswiki.osgeo.org/wiki/Cygwin_Packages
+REM
+REM	rem -- These are the packages we will install (in addition to the default packages)
+REM	set PACKAGES=mintty,wget,ctags,diffutils
+REM	set PACKAGES=%PACKAGES%,gcc4,make,automake,autoconf,readline,libncursesw-devel,libiconv
+REM	set PACKAGES=%PACKAGES%,colorgcc,colordiff,bvi,gawk
+REM	set PACKAGES=%PACKAGES%,bc,gnuplot
+REM	set PACKAGES=%PACKAGES%,inetutils,ncurses,openssh,openssl,vim,mc,multitail,dos2unix,irssi
+REM
+REM	echo [INFO]: Cygwin setup installing custom packages:
+REM	echo %PACKAGES%
+REM	%PROGNAME% %OPTIONS% -s %SITE% -l "%LOCALDIR%" -R "%ROOTDIR%" -P %PACKAGES%
+
+REM --------------------------------------------------------------
+REM Common package groups for different types of work 
+REM   -- pattern from https://github.com/stephenmm/auto-install-cygwin
+
+REM C development: gcc4-core make readline
+REM SET PACKAGES=-P gcc4-core,make,readline,binutils
+
+REM General : diffutils ctags
+REM SET PACKAGES=%PACKAGES%,diffutils,ctags
+
+REM Packaging : cygport
+REM SET PACKAGES=%PACKAGES%,cygport
+
+REM Packages : Taken from a previous HUGE cygwin install
+REM SET PACKAGES=%PACKAGES%,X-start-menu-icons,_update-info-dir,alternatives,^
+REM base-cygwin,base-files,bash,bzip2,coreutils,crypt,csih,ctags,^
+REM cygrunsrv,cygutils,cygwin,cygwin-doc,dash,dbus,diffutils,dos2unix,editrights,^
+REM file,findutils,font-adobe-dpi75,font-alias,font-encodings,font-misc-misc,fontconfig,^
+REM gamin,gawk,gettext,gnome-icon-theme,grep,groff,gsettings-desktop-schemas,gvim,gzip,^
+REM hicolor-icon-theme,ipc-utils,kbproto,less,^
+REM libGL1,libICE6,libSM6,libX11-devel,libX11-xcb-devel,libX11-xcb1,libX11_6,libXau-devel,libXau6,libXaw7,libXcomposite1,libXcursor1,libXdamage1,libXdmcp-devel,libXdmcp6,libXext6,libXfixes3,libXft2,libXi6,libXinerama1,libXmu6,libXmuu1,libXpm4,libXrandr2,libXrender1,libXt6,libapr1,libaprutil1,libatk1.0_0,libattr1,libblkid1,libbz2_1,libcairo2,libdatrie1,libdb4.5,libdbus1_3,libedit0,libexpat1,libfam0,libffi4,libfontconfig1,libfontenc1,libfreetype6,libgcc1,libgcrypt11,libgdbm4,libgdk_pixbuf2.0_0,libglib2.0_0,libgmp3,libgnutls26,libgpg-error0,libgtk2.0_0,libiconv2,libidn11,libintl8,libjasper1,libjbig2,libjpeg7,libjpeg8,liblzma5,liblzo2_2,libncurses10,libncursesw10,libneon27,libopenldap2_3_0,libopenssl098,libpango1.0_0,libpcre0,libpixman1_0,libpng14,libpopt0,libpq5,libproxy1,libpthread-stubs,libreadline7,libsasl2,libserf0_1,libserf1_0,libsigsegv2,libsqlite3_0,libssp0,libstdc++6,libtasn1_3,libthai0,libtiff5,libuuid1,libwrap0,libxcb-devel,libxcb-glx0,libxcb-render0,libxcb-shm0,libxcb1,libxkbfile1,libxml2,^
+REM login,luit,man,minires,mintty,mkfontdir,mkfontscale,nano,openssh,pbzip2,perl,rebase,run,sed,shared-mime-info,subversion,^
+REM tar,tcltk,terminfo,texinfo,tzcode,util-linux,vim-common,wget,which,^
+REM x11perf,xauth,xcursor-themes,xinit,xkbcomp,xkeyboard-config,xmodmap,xorg-server,xproto,xrdb,xterm,xxd,xz,zlib,zlib-devel,zlib
+
+REM ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 
 set DESKTOP_SHORTCUT=TRUE
 
@@ -28,7 +119,12 @@ if not exist %CYGWIN_BASE% goto install
 
 :install
 echo About to install Cygwin %CPU% to folder %CYGWIN_BASE%
-pause
+echo    CYGWIN_OPTIONS=%CYGWIN_OPTIONS%
+echo    SITE=%SITE%
+echo    CATEGORIES=%CATEGORIES%
+echo    PACKAGES=%PACKAGES%
+echo.
+echo Press Ctrl+C to exit or & pause
 
 mkdir "%CYGWIN_BASE%"
 cd %CYGWIN_BASE%
@@ -69,7 +165,7 @@ echo.                                                                   >> %DLOA
 cscript /nologo %DLOAD_SCRIPT% https://cygwin.com/setup-%CPU%.exe setup-%CPU%.exe
 echo.
 echo ** Installing base cygwin...
-setup-%CPU% %CYGWIN_OPTIONS% %SITE% %PACKAGES% 
+setup-%CPU% %CYGWIN_OPTIONS% --site %SITE% %CATEGORIES% %PACKAGES% 
 rem original command: setup-%CPU% --no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts --site ftp://mirror.switch.ch/mirror/cygwin/ --categories Base -l %CYGWIN_BASE%\var\cache\apt\packages --packages dos2unix,ncurses,wget,gcc-g++,make,vim,git
 
 echo.
@@ -102,6 +198,10 @@ set DLOAD_SCRIPT=
 set SHORTCUT_SCRIPT=
 
 echo Cygwin is now installed!
+
+
+
+
 
 :exit
 pause
