@@ -1,12 +1,20 @@
 @echo off
+set SCRIPTVER=2016.07.22
+echo.
+echo ----------------------------
+echo - cygwin-installer.bat v%SCRIPTVER%- unattended/simplified Cygwin install script
+echo - Gets latest setup .exe from official https://cygwin.com/ site.
+echo - Then installs base packages and additional packages {edit top of batch as needed}
+echo - Source and history on https://github.com/zephans/cygwin-installer
+echo -----------------------------
 
 rem Set CYGWIN_BASE variable to the installation directory.
-   rem cygwin-installer default is C:\Users\<username>\cygwin
+rem cygwin-installer default is C:\Users\<username>\cygwin  a.k.a. CYGWIN_BASE=%USERPROFILE%\cygwin
    rem cygwin.com setup default is C:\cygwin64 {or C:\cygwin32}
    rem set CYGWIN_BASE=%USERPROFILE%\cygwin
 set CYGWIN_BASE=C:\cygwin64
 
-rem Set CPU - x86 for 32-bit Cygwin, or x86_64 for 64-bit Cygwin
+rem Set CPU=x86_64 for 64-bit Cygwin or CPU=x86 
 set CPU=x86_64
 
 rem cygwin_install.exe settings and packages for install
@@ -30,15 +38,15 @@ set CATEGORIES=--categories Base
 REM Networking : {required for SSH tunnels}
 SET PACKAGES=--packages openssh,openssl,corkscrew,autossh
 
-REM Development :
+REM Development version control :
 SET PACKAGES=%PACKAGES%,git,git-completion,git-gui-gitk
 
 REM General :
-SET PACKAGES=%PACKAGES%,curl,wget,netcat,login
-SET PACKAGES=%PACKAGES%,diffutils,ctags,bash-completion
+SET PACKAGES=%PACKAGES%,curl,wget,netcat
+SET PACKAGES=%PACKAGES%,awk,bash-completion,bzip2,coreutils,ctags,diffutils,gawk,grep,groff,login,sed,tar
 
 REM Editors :
-SET PACKAGES=%PACKAGES%,vim
+SET PACKAGES=%PACKAGES%,vim,vim-common
 
 REM apt-cyg install dependencies, do not change -- from https://github.com/hasantahir/cygwin-auto-install
 SET PACKAGES=%PACKAGES%,wget,tar,gawk,bzip2,subversion
