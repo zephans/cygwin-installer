@@ -1,5 +1,5 @@
 @echo off
-set SCRIPTVER=2016.07.22
+set SCRIPTVER=2016.07.24
 echo.
 echo ----------------------------
 echo - cygwin-installer.bat v%SCRIPTVER%- unattended/simplified Cygwin install script
@@ -7,27 +7,25 @@ echo - Gets latest setup .exe from official https://cygwin.com/ site.
 echo - Then installs base packages and additional packages {edit top of batch as needed}
 echo - Source and history on https://github.com/zephans/cygwin-installer
 echo -----------------------------
-
+echo.
+echo ** Stage 1 - Preparing install settings.
 rem Set CYGWIN_BASE variable to the installation directory.
-rem cygwin-installer default is C:\Users\<username>\cygwin  a.k.a. CYGWIN_BASE=%USERPROFILE%\cygwin
-   rem cygwin.com setup default is C:\cygwin64 {or C:\cygwin32}
-   rem set CYGWIN_BASE=%USERPROFILE%\cygwin
+    rem initial "cygwin-installer" script default was C:\Users\<username>\cygwin  a.k.a. CYGWIN_BASE=%USERPROFILE%\cygwin
+    rem cygwin.com setup default is C:\cygwin64 {or C:\cygwin32}
+@echo on
 set CYGWIN_BASE=C:\cygwin64
+set CPU=x86_64  ::rem Set CPU=x86_64 for 64-bit Cygwin or CPU=x86 
+echo ** Setting cygwin_install.exe settings and default packages to install
+   rem format of command is setup-%CPU% %CYGWIN_OPTIONS% %SITE% %PACKAGES% 
+   rem FYI: setup options available by running setup-x86_64.exe --help
+set CYGWIN_OPTIONS=--no-admins --root %CYGWIN_BASE% --quiet-mode --disable-buggy-antivirus --local-package-dir %CYGWIN_BASE%\var\cache\apt\packages
+   rem --no-shortcuts 
 
-rem Set CPU=x86_64 for 64-bit Cygwin or CPU=x86 
-set CPU=x86_64
-
-rem cygwin_install.exe settings and packages for install
-rem format of command is setup-%CPU% %CYGWIN_OPTIONS% %SITE% %PACKAGES% 
-rem FYI: setup options available by running setup-x86_64.exe --help
-set CYGWIN_OPTIONS=--no-admin --root %CYGWIN_BASE% --quiet-mode --disable-buggy-antivirus --local-package-dir %CYGWIN_BASE%\var\cache\apt\packages
-rem --no-shortcuts 
-
-rem SITE: If default doesn't work then pick from https://cygwin.com/mirrors.html
-rem set SITE=ftp://mirror.switch.ch/mirror/cygwin/ 
+@echo ** SITE: If default doesn't work then pick another site from https://cygwin.com/mirrors.html
 set SITE=http://mirrors.kernel.org/sourceware/cygwin/
+   rem set SITE=ftp://mirror.switch.ch/mirror/cygwin/ 
 
-REM *** PACKAGES TO INSTALL ***
+@echo ** PHASE 2: PACKAGES TO INSTALL ***
 REM --------------------------------------------------------------
 REM Common package groups for different types of work 
 REM   -- PACKAGES grouping pattern from https://github.com/stephenmm/auto-install-cygwin
@@ -46,11 +44,12 @@ SET PACKAGES=%PACKAGES%,curl,wget,netcat
 SET PACKAGES=%PACKAGES%,awk,bash-completion,bzip2,coreutils,ctags,diffutils,gawk,grep,groff,login,sed,tar
 
 REM Editors :
-SET PACKAGES=%PACKAGES%,vim,vim-common
+SET PACKAGES=%PACKAGES%,vim,vim-common,nano
 
 REM apt-cyg install dependencies, do not change -- from https://github.com/hasantahir/cygwin-auto-install
 SET PACKAGES=%PACKAGES%,wget,tar,gawk,bzip2,subversion
 
+@echo off
 REM vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 REM TODO -- Consolidate PACKAGES groups, then delete remarked blocks below.
 REM packages from https://gist.github.com/wjrogers/1016065 
@@ -111,9 +110,7 @@ REM libGL1,libICE6,libSM6,libX11-devel,libX11-xcb-devel,libX11-xcb1,libX11_6,lib
 REM login,luit,man,minires,mintty,mkfontdir,mkfontscale,nano,openssh,pbzip2,perl,rebase,run,sed,shared-mime-info,subversion,^
 REM tar,tcltk,terminfo,texinfo,tzcode,util-linux,vim-common,wget,which,^
 REM x11perf,xauth,xcursor-themes,xinit,xkbcomp,xkeyboard-config,xmodmap,xorg-server,xproto,xrdb,xterm,xxd,xz,zlib,zlib-devel,zlib
-
 REM ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 
 set DESKTOP_SHORTCUT=TRUE
 
@@ -122,10 +119,11 @@ rem No changes needed past this point!
 
 if not exist %CYGWIN_BASE% goto install
    echo The directory %CYGWIN_BASE% already exists.
-   echo Cannot install over an existing installation.
+   echo This script is not designed or tested to install over an existing installation. 
+   echo {TODO - fix/test script reinstall.}
    goto exit
 
-:install
+echo ** PHASE 3:install **
 echo About to install Cygwin %CPU% to folder %CYGWIN_BASE%
 echo    CYGWIN_OPTIONS=%CYGWIN_OPTIONS%
 echo    SITE=%SITE%
@@ -135,7 +133,7 @@ echo.
 echo Press Ctrl+C to exit or & pause
 
 mkdir "%CYGWIN_BASE%"
-cd %CYGWIN_BASE%
+cd /d %CYGWIN_BASE%
 
 echo Getting Cygwin setup-%CPU%.exe...
 rem Windows has no built-in wget or curl, so we generate a VBS script to do the same
@@ -177,14 +175,21 @@ setup-%CPU% %CYGWIN_OPTIONS% --site %SITE% %CATEGORIES% %PACKAGES%
 rem original command: setup-%CPU% --no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts --site ftp://mirror.switch.ch/mirror/cygwin/ --categories Base -l %CYGWIN_BASE%\var\cache\apt\packages --packages dos2unix,ncurses,wget,gcc-g++,make,vim,git
 
 echo.
-echo ** Installing apt-cyg package manager...
+echo ** PHASE 4: Cygwin/bash configuration... **
+echo ** Installing apt-cyg package manager {support getting package updates from a cygwin prompt}...
 %CYGWIN_BASE%\bin\wget -O /bin/apt-cyg https://raw.githubusercontent.com/transcode-open/apt-cyg/master/apt-cyg
 %CYGWIN_BASE%\bin\chmod +x /bin/apt-cyg
 echo.
 echo Creating home directory...
 "%CYGWIN_BASE%\bin\bash" --login -c echo "Creating home directory..."
 echo.
+echo Appending .source rsstfsconfig.sh
 
+rem TODO: map to team-wide common folder replication rather than separate copies to maintain.
+rem IDEA: Adapt Dropbox folder mappings used in <https://github.com/stephenmm/auto-install-cygwin> to use "OneDrive - Philips" or a SharePoint offline folder.
+
+echo.
+echo ** PHASE 5: Cleanup and misc. options...
 if /I "%DESKTOP_SHORTCUT%"="TRUE" (
     echo Create desktop shortcut
     set SHORTCUT_SCRIPT=%TEMP%\shortcut-%RANDOM%-%RANDOM%-%RANDOM%-%RANDOM%.vbs
@@ -196,8 +201,6 @@ if /I "%DESKTOP_SHORTCUT%"="TRUE" (
     echo oLink.Save                                                         >> "%SHORTCUT_SCRIPT%"
     cscript /nologo "%SHORTCUT_SCRIPT%"
 )
-echo.
-echo ** Cleanup...
 del "%DLOAD_SCRIPT%"
 del "%SHORTCUT_SCRIPT%"
 set CYGWIN_BASE=
@@ -206,10 +209,6 @@ set DLOAD_SCRIPT=
 set SHORTCUT_SCRIPT=
 
 echo Cygwin is now installed!
-
-
-
-
 
 :exit
 pause
