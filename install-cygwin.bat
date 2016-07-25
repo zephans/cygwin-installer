@@ -209,6 +209,16 @@ set DLOAD_SCRIPT=
 set SHORTCUT_SCRIPT=
 
 echo Cygwin is now installed!
+echo.
+echo PHASE 6: Configuring Cygwin for RSSTFS access...
+rem c:\cygwin\bin\bash.exe --login -i -c '/usr/bin/mkpasswd --local > /etc/passwd'
+rem c:\cygwin\bin\bash.exe --login -i -c '/usr/bin/mkgroup --local > /etc/group'
+echo ** Generating your SSH private/public key pair...
+echo ** IMPORTANT: Save the passphrase you choose into your password manager before proceeding. 
+echo ** WARNING: Nobody can recover your private key passphrase if it gets lost.
+c:\cygwin\bin\bash.exe --login -i -c '/usr/bin/ssh-keygen -t rsa -b 2048'
+rem c:\cygwin\bin\bash.exe --login -i -c '/usr/bin/ssh-host-config --yes'
+
 
 :exit
 pause
