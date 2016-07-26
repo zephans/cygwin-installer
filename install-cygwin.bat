@@ -1,5 +1,5 @@
 @echo off
-set SCRIPTVER=2016.07.24
+set SCRIPTVER=2016.07.25
 echo.
 echo ----------------------------
 echo - cygwin-installer.bat v%SCRIPTVER%- unattended/simplified Cygwin install script
@@ -8,7 +8,8 @@ echo - Then installs base packages and additional packages {edit top of batch as
 echo - Source and history on https://github.com/zephans/cygwin-installer
 echo -----------------------------
 echo.
-echo ** Stage 1 - Preparing install settings.
+echo ---------------------------------------
+echo ** STAGE 1 : Preparing install settings and list of packages to install...
 rem Set CYGWIN_BASE variable to the installation directory.
     rem initial "cygwin-installer" script default was C:\Users\<username>\cygwin  a.k.a. CYGWIN_BASE=%USERPROFILE%\cygwin
     rem cygwin.com setup default is C:\cygwin64 {or C:\cygwin32}
@@ -21,16 +22,17 @@ echo ** Setting cygwin_install.exe settings and default packages to install
 set CYGWIN_OPTIONS=--no-admins --root %CYGWIN_BASE% --quiet-mode --disable-buggy-antivirus --local-package-dir %CYGWIN_BASE%\var\cache\apt\packages
    rem --no-shortcuts 
 
-@echo ** SITE: If default doesn't work then pick another site from https://cygwin.com/mirrors.html
+@echo ** Cygwin package site: If default doesn't work then pick another site from https://cygwin.com/mirrors.html
 set SITE=http://mirrors.kernel.org/sourceware/cygwin/
    rem set SITE=ftp://mirror.switch.ch/mirror/cygwin/ 
-
-@echo ** PHASE 2: PACKAGES TO INSTALL ***
-REM --------------------------------------------------------------
-REM Common package groups for different types of work 
+@echo.
+@echo -------------------------------------------------
+@echo ** STAGE 2: BUILD LIST OF PACKAGES TO INSTALL ***
+@echo -------------------------------------------------
+REM Common package groups for different types of work. Easy to add/remove package list as needed.
 REM   -- PACKAGES grouping pattern from https://github.com/stephenmm/auto-install-cygwin
 REM   -- TIP: any duplicates will be ignored
-REM For a full package list see https://cygwin.com/packages/
+REM For a full package list see https://cygwin.com/packages/... but don't get lost or install several GB for all.
 set CATEGORIES=--categories Base 
 
 REM Networking : {required for SSH tunnels}
@@ -122,8 +124,9 @@ if not exist %CYGWIN_BASE% goto install
    echo This script is not designed or tested to install over an existing installation. 
    echo {TODO - fix/test script reinstall.}
    goto exit
-
-echo ** PHASE 3:install **
+echo.
+echo ----------------------
+echo ** STAGE 3:install **
 echo About to install Cygwin %CPU% to folder %CYGWIN_BASE%
 echo    CYGWIN_OPTIONS=%CYGWIN_OPTIONS%
 echo    SITE=%SITE%
@@ -170,13 +173,14 @@ echo.                                                                   >> %DLOA
 
 cscript /nologo %DLOAD_SCRIPT% https://cygwin.com/setup-%CPU%.exe setup-%CPU%.exe
 echo.
-echo ** Installing base cygwin...
+echo ** Installing Cygwin...
 setup-%CPU% %CYGWIN_OPTIONS% --site %SITE% %CATEGORIES% %PACKAGES% 
 rem original command: setup-%CPU% --no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts --site ftp://mirror.switch.ch/mirror/cygwin/ --categories Base -l %CYGWIN_BASE%\var\cache\apt\packages --packages dos2unix,ncurses,wget,gcc-g++,make,vim,git
 
 echo.
-echo ** PHASE 4: Cygwin/bash configuration... **
-echo ** Installing apt-cyg package manager {support getting package updates from a cygwin prompt}...
+echo ----------------------------------------------
+echo ** STAGE 4: Cygwin/bash configuration... **
+echo ** Installing apt-cyg package manager {package management/patching within a cygwin prompt}...
 %CYGWIN_BASE%\bin\wget -O /bin/apt-cyg https://raw.githubusercontent.com/transcode-open/apt-cyg/master/apt-cyg
 %CYGWIN_BASE%\bin\chmod +x /bin/apt-cyg
 echo.
@@ -189,7 +193,7 @@ rem TODO: map to team-wide common folder replication rather than separate copies
 rem IDEA: Adapt Dropbox folder mappings used in <https://github.com/stephenmm/auto-install-cygwin> to use "OneDrive - Philips" or a SharePoint offline folder.
 
 echo.
-echo ** PHASE 5: Cleanup and misc. options...
+echo ** STAGE 5: Cleanup and misc. options...
 if /I "%DESKTOP_SHORTCUT%"="TRUE" (
     echo Create desktop shortcut
     set SHORTCUT_SCRIPT=%TEMP%\shortcut-%RANDOM%-%RANDOM%-%RANDOM%-%RANDOM%.vbs
@@ -210,7 +214,7 @@ set SHORTCUT_SCRIPT=
 
 echo Cygwin is now installed!
 echo.
-echo PHASE 6: Configuring Cygwin for RSSTFS access...
+echo STAGE 6: Configuring Cygwin for RSSTFS access...
 rem c:\cygwin\bin\bash.exe --login -i -c '/usr/bin/mkpasswd --local > /etc/passwd'
 rem c:\cygwin\bin\bash.exe --login -i -c '/usr/bin/mkgroup --local > /etc/group'
 echo ** Generating your SSH private/public key pair...
