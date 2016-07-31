@@ -1,0 +1,6 @@
+## Team Configuration Section
+# source the team configuration file if it exists
+if [ -f "${HOME}/teamconfig.sh" ]; then
+  source "${HOME}/teamconfig.sh"
+fi
+##
